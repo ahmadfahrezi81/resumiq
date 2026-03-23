@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Resume } from "@/types/resume";
 import InlineField from "./InlineField";
-import { Loader2, Copy, Check, Trash2, Plus, X, Download } from "lucide-react";
-import { pdf } from "@react-pdf/renderer";
-import ResumePDF from "./ResumePDF";
+import { Loader2, Trash2, Plus, X } from "lucide-react";
 
 interface Props {
     resume: Resume | null;
@@ -21,9 +19,7 @@ export default function ResumeEditor({
     onResumeChange,
 }: Props) {
     const [doc, setDoc] = useState<Resume | null>(null);
-    const [copied, setCopied] = useState(false);
     const [selected, setSelected] = useState<SelectionKey>(null);
-    const docRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (resume) setDoc(resume);
@@ -41,6 +37,7 @@ export default function ResumeEditor({
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (doc) onResumeChange(doc);
     }, [doc]);
@@ -53,6 +50,7 @@ export default function ResumeEditor({
     function isSelected(key: string) {
         return selected === key;
     }
+
     function updateField<K extends keyof Resume>(key: K, value: Resume[K]) {
         setDoc((prev) => {
             if (!prev) return prev;
@@ -292,24 +290,6 @@ export default function ResumeEditor({
         });
     }
 
-    function handleCopyJSON() {
-        if (!doc) return;
-        navigator.clipboard.writeText(JSON.stringify(doc, null, 2));
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
-
-    async function handleExportPDF() {
-        if (!doc) return;
-        const blob = await pdf(<ResumePDF resume={doc} />).toBlob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${doc.name.replace(/\s+/g, "_")}_resume.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
     if (!doc && !isLoading) {
         return (
             <div className="flex h-full items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 bg-white">
@@ -344,10 +324,8 @@ export default function ResumeEditor({
 
     return (
         <div className="h-full overflow-y-auto rounded-3xl bg-white shadow-sm">
-            {/* Document + margin layout */}
             <div className="mx-auto max-w-[980px] px-6 py-12">
                 <div className="flex gap-4">
-                    {/* Resume document */}
                     <div className="w-[794px] shrink-0 px-14">
                         {/* Header */}
                         <div className="mb-6 border-b border-zinc-200 pb-6">
@@ -397,6 +375,7 @@ export default function ResumeEditor({
                                 )}
                             </div>
                         </div>
+
                         {/* Summary */}
                         <section className="mb-6">
                             <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -411,6 +390,7 @@ export default function ResumeEditor({
                                 />
                             </p>
                         </section>
+
                         {/* Skills */}
                         <section className="mb-6">
                             <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -460,6 +440,7 @@ export default function ResumeEditor({
                                 </button>
                             </div>
                         </section>
+
                         {/* Experience */}
                         <section className="mb-6">
                             <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -471,11 +452,7 @@ export default function ResumeEditor({
                                         key={i}
                                         data-entry
                                         onClick={(e) => select(`exp-${i}`, e)}
-                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${
-                                            isSelected(`exp-${i}`)
-                                                ? "bg-blue-50 ring-2 ring-blue-200"
-                                                : "hover:bg-zinc-50"
-                                        }`}
+                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${isSelected(`exp-${i}`) ? "bg-blue-50 ring-2 ring-blue-200" : "hover:bg-zinc-50"}`}
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-start justify-between">
@@ -621,6 +598,7 @@ export default function ResumeEditor({
                                 </button>
                             </div>
                         </section>
+
                         {/* Education */}
                         <section className="mb-6">
                             <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -632,11 +610,7 @@ export default function ResumeEditor({
                                         key={i}
                                         data-entry
                                         onClick={(e) => select(`edu-${i}`, e)}
-                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${
-                                            isSelected(`edu-${i}`)
-                                                ? "bg-blue-50 ring-2 ring-blue-200"
-                                                : "hover:bg-zinc-50"
-                                        }`}
+                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${isSelected(`edu-${i}`) ? "bg-blue-50 ring-2 ring-blue-200" : "hover:bg-zinc-50"}`}
                                     >
                                         <div className="flex-1 flex items-start justify-between">
                                             <div>
@@ -744,6 +718,7 @@ export default function ResumeEditor({
                                 </button>
                             </div>
                         </section>
+
                         {/* Achievements */}
                         {doc.achievements && doc.achievements.length > 0 && (
                             <section className="mb-6">
@@ -758,11 +733,7 @@ export default function ResumeEditor({
                                             onClick={(e) =>
                                                 select(`ach-${i}`, e)
                                             }
-                                            className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${
-                                                isSelected(`ach-${i}`)
-                                                    ? "bg-blue-50 ring-2 ring-blue-200"
-                                                    : "hover:bg-zinc-50"
-                                            }`}
+                                            className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${isSelected(`ach-${i}`) ? "bg-blue-50 ring-2 ring-blue-200" : "hover:bg-zinc-50"}`}
                                         >
                                             <div className="flex-1 flex gap-3">
                                                 <div className="flex flex-col gap-0.5">
@@ -826,6 +797,7 @@ export default function ResumeEditor({
                                 </div>
                             </section>
                         )}
+
                         {/* Projects */}
                         <section className="mb-6">
                             <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-indigo-400">
@@ -837,11 +809,7 @@ export default function ResumeEditor({
                                         key={i}
                                         data-entry
                                         onClick={(e) => select(`proj-${i}`, e)}
-                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${
-                                            isSelected(`proj-${i}`)
-                                                ? "bg-blue-50 ring-2 ring-blue-200"
-                                                : "hover:bg-zinc-50"
-                                        }`}
+                                        className={`relative flex cursor-pointer rounded-xl p-3 -mx-3 transition ${isSelected(`proj-${i}`) ? "bg-blue-50 ring-2 ring-blue-200" : "hover:bg-zinc-50"}`}
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-start justify-between">
